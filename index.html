@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aman → Ringsmai</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #002059;
+  --navy-mid:   #0a3580;
+  --navy-light: #1a5ab8;
+  --blue-soft:  #4a7fd4;
+  --blue-pale:  #7aafff;
+  --paper:      #f5efe8;
+  --gold:       #c4973a;
+  --blush:      #d4856a;
+  --muted:      #8a9ab8;
+  --ink:        #020d1f;
+}
+
+body {
+  background: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: none;
+}
+
+/* Custom cursor */
+#cur {
+  position: fixed;
+  width: 9px; height: 9px;
+  background: var(--blue-pale);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  mix-blend-mode: screen;
+  transition: transform 0.08s;
+}
+
+/* Noise */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ── AMBIENT ORBS ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: drift var(--t) ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(var(--dx), var(--dy)) scale(1.08); }
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: fixed; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+  z-index: 10;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes blink { 0%,100%{opacity:0.35} 50%{opacity:0.85} }
+@keyframes heartbeat {
+  0%,100% { transform: translate(-50%,-55%) scale(1); filter: drop-shadow(0 0 8px var(--navy-light)); }
+  50%      { transform: translate(-50%,-55%) scale(1.2); filter: drop-shadow(0 0 20px var(--blue-soft)); }
+}
+@keyframes linegrow {
+  from { opacity:0; width:0; }
+  to   { opacity:1; width:48px; }
+}
+
+/* ── SCREEN 1: INTRO ── */
+#s1 { background: radial-gradient(ellipse at 30% 40%, rgba(0,32,89,0.55) 0%, transparent 65%), radial-gradient(ellipse at 80% 70%, rgba(10,53,128,0.3) 0%, transparent 50%); }
+
+#s1 .eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2.8rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.4s forwards;
+}
+#s1 .initials {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(4.5rem, 16vw, 10rem);
+  color: var(--paper);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  animation: fadeUp 1.2s 0.7s forwards;
+  position: relative;
+}
+#s1 .initials .sep {
+  font-size: 0.32em;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  color: var(--blue-soft);
+  animation: heartbeat 2.4s ease-in-out infinite;
+}
+#s1 .tap-hint {
+  font-size: 0.68rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3.2rem;
+  opacity: 0;
+  animation: blink 2.2s ease-in-out infinite, fadeUp 1s 1.8s forwards;
+  cursor: pointer;
+}
+
+/* ── SCREEN 2: ORIENTATION ── */
+#s2 { background: radial-gradient(ellipse at 60% 50%, rgba(0,32,89,0.2) 0%, transparent 60%); }
+
+.card {
+  background: var(--paper);
+  max-width: 420px;
+  width: 100%;
+  padding: 3rem 2.5rem;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,32,89,0.08);
+}
+.card-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--navy), var(--navy-light), var(--blue-soft), var(--gold));
+}
+.card-tag {
+  font-size: 0.58rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 1.8rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.3s forwards;
+}
+.card-heading {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.5rem, 4.5vw, 2.1rem);
+  color: var(--navy);
+  line-height: 1.35;
+  margin-bottom: 1.2rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.55s forwards;
+}
+.card-heading em { font-style: italic; color: var(--navy-light); }
+.card-body {
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: #4a5568;
+  line-height: 1.85;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.85s forwards;
+}
+.card-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--navy-light);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--blue-soft);
+  padding-bottom: 3px;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 0.8s 1.2s forwards;
+  transition: color 0.25s, letter-spacing 0.25s;
+}
+.card-btn:hover { color: var(--navy); letter-spacing: 0.5em; }
+
+/* ── SCREEN 3: PRIYOM ── */
+#s3 { background: radial-gradient(ellipse at 40% 50%, rgba(0,32,89,0.7) 0%, rgba(2,13,31,0.95) 70%); }
+
+.card-dark {
+  background: rgba(0, 18, 64, 0.85);
+  border: 1px solid rgba(74, 127, 212, 0.2);
+  max-width: 420px;
+  width: 100%;
+  padding: 3rem 2.5rem;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(0,32,89,0.3);
+  backdrop-filter: blur(10px);
+}
+.card-dark .card-bar {
+  background: linear-gradient(to right, var(--navy-light), var(--blue-soft), var(--blue-pale));
+}
+.card-dark .card-tag { color: rgba(122, 175, 255, 0.5); }
+.card-dark .card-heading { color: var(--paper); }
+.card-dark .card-heading em { color: var(--blue-pale); }
+.card-dark .card-body { color: rgba(180, 210, 255, 0.6); }
+.card-dark .card-btn { color: var(--blue-pale); border-color: rgba(74,127,212,0.5); }
+.card-dark .card-btn:hover { color: var(--paper); }
+
+/* ── SCREEN 4: FEELINGS ── */
+#s4 { background: radial-gradient(ellipse at 50% 40%, rgba(0,32,89,0.35) 0%, transparent 65%); }
+
+#s4 .feel-wrap { max-width: 480px; width: 100%; }
+#s4 .feel-quote {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.7rem, 5vw, 2.9rem);
+  color: var(--paper);
+  line-height: 1.45;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards;
+}
+#s4 .feel-quote em { color: var(--blue-pale); font-style: italic; }
+#s4 .feel-note {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.85;
+  border-left: 2px solid var(--navy-light);
+  padding-left: 1.1rem;
+  text-align: left;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 1s 1s forwards;
+}
+#s4 .card-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--blue-soft);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--navy-light);
+  padding-bottom: 3px;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 0.8s 1.6s forwards;
+  transition: color 0.25s;
+}
+#s4 .card-btn:hover { color: var(--paper); }
+
+/* ── SCREEN 5: FINAL ── */
+#s5 { background: radial-gradient(ellipse at 40% 30%, rgba(0,32,89,0.5) 0%, rgba(2,13,31,0.98) 70%); }
+
+#s5 .final-card {
+  background: var(--paper);
+  max-width: 420px;
+  width: 100%;
+  padding: 3rem 2.5rem;
+  position: relative;
+  box-shadow: 0 40px 100px rgba(0,32,89,0.4), 0 0 0 1px rgba(0,32,89,0.12);
+  overflow-y: auto;
+  max-height: 88vh;
+}
+#s5 .final-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--navy), var(--navy-light), var(--blue-soft), var(--blush), var(--gold));
+}
+#s5 .final-tag {
+  font-size: 0.58rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.4rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.3s forwards;
+}
+#s5 .final-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.8rem, 9vw, 5rem);
+  color: var(--navy);
+  line-height: 1;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.55s forwards;
+}
+#s5 .final-rule {
+  height: 2px;
+  width: 0;
+  background: linear-gradient(to right, var(--navy), var(--blue-soft));
+  margin: 1.3rem 0;
+  opacity: 0;
+  box-shadow: 0 0 10px rgba(10,53,128,0.4);
+  animation: linegrow 0.9s 1s forwards;
+}
+#s5 .final-body {
+  font-size: 0.94rem;
+  font-weight: 300;
+  color: #3a4a6a;
+  line-height: 2;
+  font-style: italic;
+  text-align: left;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 1s 1.2s forwards;
+}
+#s5 .final-body strong { color: var(--navy); font-style: normal; }
+#s5 .final-sig {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.05rem;
+  color: var(--navy-light);
+  text-align: right;
+  opacity: 0;
+  animation: fadeUp 0.8s 2s forwards;
+}
+
+/* ── SCREEN 6: PROPOSAL ── */
+#s6 { background: radial-gradient(ellipse at 40% 35%, rgba(0,32,89,0.65) 0%, rgba(2,13,31,0.97) 70%); }
+
+#s6 .prop-ring {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.2s forwards, ringPulse 2.5s 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(74,127,212,0.6));
+}
+@keyframes ringPulse {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(74,127,212,0.5)); }
+  50%      { transform: scale(1.1); filter: drop-shadow(0 0 50px rgba(122,175,255,0.8)); }
+}
+#s6 .prop-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  color: var(--paper);
+  line-height: 1.35;
+  margin-bottom: 0.8rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.5s forwards;
+}
+#s6 .prop-title em { color: var(--blue-pale); font-style: italic; }
+#s6 .prop-rule {
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(to right, transparent, var(--blue-soft), transparent);
+  margin: 1rem auto 1.4rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.9s forwards;
+}
+#s6 .prop-sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-style: italic;
+  max-width: 340px;
+  line-height: 1.8;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 1s 1.1s forwards;
+}
+.prop-btns {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeUp 1s 1.5s forwards;
+}
+.btn-yes {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--blue-soft), var(--blue-pale));
+  border: none;
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow: 0 0 30px rgba(74,127,212,0.45);
+  transition: all 0.3s;
+}
+.btn-yes:hover { transform: scale(1.06); box-shadow: 0 0 50px rgba(122,175,255,0.7); }
+.btn-no {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(138,154,184,0.45);
+  background: transparent;
+  border: 1px solid rgba(74,127,212,0.2);
+  padding: 1rem 1.6rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+.btn-no:hover { color: rgba(138,154,184,0.75); border-color: rgba(74,127,212,0.4); }
+
+/* ── SCREEN 7: YES ── */
+#s7 { background: radial-gradient(ellipse at 50% 35%, rgba(0,32,89,0.7) 0%, rgba(2,13,31,0.97) 65%); }
+
+#s7 .yes-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 1.2rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.2s forwards;
+}
+#s7 .yes-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 7vw, 4.5rem);
+  background: linear-gradient(135deg, var(--blue-pale), #a8d4ff, var(--gold));
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite, fadeUp 1s 0.4s forwards;
+  opacity: 0;
+  margin-bottom: 1rem;
+}
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+#s7 .yes-rule {
+  height: 1px; width: 60px;
+  background: linear-gradient(to right, transparent, var(--blue-soft), transparent);
+  margin: 1rem auto 1.4rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+#s7 .yes-msg {
+  color: rgba(200,220,255,0.75);
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  font-style: italic;
+  max-width: 420px;
+  line-height: 1.9;
+  opacity: 0;
+  animation: fadeUp 1s 1s forwards;
+}
+#s7 .yes-hearts {
+  font-size: 1.8rem;
+  margin-top: 1.8rem;
+  letter-spacing: 0.4em;
+  opacity: 0;
+  animation: fadeUp 1s 1.5s forwards;
+}
+
+/* ── SCREEN 8: NO ── */
+#s8 { background: radial-gradient(ellipse at 50% 30%, rgba(20,10,15,0.95) 0%, rgba(2,13,31,0.99) 70%); overflow-y: auto; }
+
+.rain-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+.rain-drop {
+  position: absolute; top: -30px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(74,127,212,0.3));
+  animation: rainFall linear infinite;
+  border-radius: 2px;
+}
+@keyframes rainFall { 0%{transform:translateY(0);opacity:0.6} 100%{transform:translateY(110vh);opacity:0} }
+
+#s8 .no-broken {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards, breakPulse 0.6s 0.5s ease-in-out;
+  filter: drop-shadow(0 0 15px rgba(180,50,80,0.5));
+  position: relative; z-index: 5;
+}
+@keyframes breakPulse { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
+#s8 .no-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  color: rgba(180,200,230,0.7);
+  opacity: 0;
+  animation: fadeUp 1s 0.6s forwards;
+  margin-bottom: 0.5rem;
+  position: relative; z-index: 5;
+}
+#s8 .no-rule {
+  height: 1px; width: 50px;
+  background: linear-gradient(to right, transparent, rgba(180,100,100,0.6), transparent);
+  margin: 1rem auto 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 1s forwards;
+  position: relative; z-index: 5;
+}
+#s8 .no-letter {
+  max-width: 480px;
+  color: rgba(180,200,230,0.65);
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  font-style: italic;
+  line-height: 2;
+  opacity: 0;
+  animation: fadeUp 1.2s 1.2s forwards;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
+  position: relative; z-index: 5;
+}
+#s8 .no-letter span { color: rgba(220,230,255,0.85); font-style: normal; }
+#s8 .no-sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(138,154,184,0.35);
+  opacity: 0;
+  animation: fadeUp 1s 2.2s forwards;
+  margin-bottom: 2rem;
+  position: relative; z-index: 5;
+}
+.no-btns {
+  display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  opacity: 0;
+  animation: fadeUp 1s 2.5s forwards;
+  position: relative; z-index: 5;
+}
+.btn-reconsider {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--blue-soft), var(--blue-pale));
+  border: none;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow: 0 0 25px rgba(74,127,212,0.35);
+  transition: all 0.3s;
+}
+.btn-reconsider:hover { transform: scale(1.05); }
+.btn-stillno {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(138,154,184,0.3);
+  background: transparent;
+  border: 1px solid rgba(138,154,184,0.12);
+  padding: 1rem 1.4rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+.btn-stillno:hover { color: rgba(138,154,184,0.5); }
+.dots {
+  position: fixed;
+  bottom: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.55rem;
+  z-index: 20;
+}
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(74,127,212,0.2);
+  transition: background 0.4s, transform 0.3s, box-shadow 0.3s;
+}
+.dot.on {
+  background: var(--blue-soft);
+  transform: scale(1.5);
+  box-shadow: 0 0 8px var(--navy-light);
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+
+<!-- Ambient navy orbs -->
+<div class="orb" style="width:650px;height:650px;background:radial-gradient(circle,#002059,transparent);top:-200px;left:-200px;opacity:0.45;filter:blur(70px);--t:11s;--dx:50px;--dy:35px;"></div>
+<div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,#0a3580,transparent);bottom:-180px;right:-100px;opacity:0.35;filter:blur(80px);--t:14s;--dx:-40px;--dy:-25px;"></div>
+<div class="orb" style="width:350px;height:350px;background:radial-gradient(circle,#1a5ab8,transparent);top:30%;left:55%;opacity:0.2;filter:blur(90px);--t:9s;--dx:-60px;--dy:45px;"></div>
+<div class="orb" style="width:280px;height:280px;background:radial-gradient(circle,#c4973a,transparent);bottom:10%;left:10%;opacity:0.12;filter:blur(70px);--t:12s;--dx:30px;--dy:-40px;"></div>
+
+<!-- Progress dots -->
+<div class="dots">
+  <div class="dot on" id="d1"></div>
+  <div class="dot" id="d2"></div>
+  <div class="dot" id="d3"></div>
+  <div class="dot" id="d4"></div>
+  <div class="dot" id="d5"></div>
+  <div class="dot" id="d6"></div>
+  <div class="dot" id="d7"></div>
+  <div class="dot" id="d8"></div>
+</div>
+
+<!-- SCREEN 1: INTRO -->
+<div class="screen active" id="s1">
+  <p class="eyebrow">A confession by Aman</p>
+  <div class="initials">
+    A<span class="sep">♥</span>R
+  </div>
+  <p class="tap-hint" onclick="goTo(2)">Tap to read &rarr;</p>
+</div>
+
+<!-- SCREEN 2: ORIENTATION -->
+<div class="screen" id="s2">
+  <div class="card">
+    <div class="card-bar"></div>
+    <p class="card-tag">Chapter 01 — The First Glance</p>
+    <h2 class="card-heading">I first saw you<br><em>at orientation.</em></h2>
+    <p class="card-body">Same college. Crowded hall. But honestly — I never really noticed you then. You were just there. A face among many. I had no idea what was quietly beginning.</p>
+    <button class="card-btn" onclick="goTo(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: PRIYOM -->
+<div class="screen" id="s3">
+  <div class="card-dark">
+    <div class="card-bar"></div>
+    <p class="card-tag">Chapter 02 — The Connection</p>
+    <h2 class="card-heading">Priyom's<br><em>best friend.</em></h2>
+    <p class="card-body">That's how our worlds crossed. Through Priyom — and suddenly you weren't just a face anymore. You became someone I actually knew. Someone I started to genuinely notice.</p>
+    <button class="card-btn" onclick="goTo(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- SCREEN 4: FEELINGS -->
+<div class="screen" id="s4">
+  <div class="feel-wrap">
+    <h2 class="feel-quote">It hasn't been long,<br>but <em>something is there.</em></h2>
+    <p class="feel-note">I know it sounds strange — we haven't been friends for that many days. We haven't spent that much time together. But feelings don't wait for a schedule. They just show up. And mine did, quietly, for you.</p>
+    <button class="card-btn" onclick="goTo(5)">Read the full confession &rarr;</button>
+  </div>
+</div>
+
+<!-- SCREEN 5: FINAL CONFESSION -->
+<div class="screen" id="s5">
+  <div class="final-card">
+    <p class="final-tag">For you, Ringsmai</p>
+    <h1 class="final-name">Ringsmai.</h1>
+    <div class="final-rule"></div>
+    <p class="final-body">
+      Orientation. The same hall, same crowd — and you, somewhere in it, not noticed by me.<br><br>
+      Priyom brought your name into my world. And slowly, without warning, you went from a name to a thought I kept returning to.<br><br>
+      We haven't spent a lot of time together. The friendship is still new.<br><br>
+      But Ringsmai… <strong>there's something in me that belongs to you — I like you.</strong> That's the honest truth. Nothing more complicated than that. And I can't pretend otherwise.
+    </p>
+    <p class="final-sig" style="margin-bottom:1.5rem">— Aman</p>
+    <div style="text-align:center;opacity:0;animation:fadeUp 0.8s 2.5s forwards">
+      <button class="card-btn" onclick="goTo(6)" style="color:var(--blue-soft);border-color:var(--navy-light)">There's more &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 6: PROPOSAL -->
+<div class="screen" id="s6">
+  <div class="prop-ring">💍</div>
+  <h2 class="prop-title">Ringsmai,<br>will you be <em>mine?</em></h2>
+  <div class="prop-rule"></div>
+  <p class="prop-sub">I know it's soon. I know it's unexpected. But some things don't need a reason — they just feel right. And you feel right.</p>
+  <div class="prop-btns">
+    <button class="btn-yes" onclick="handleAnswer('yes')">Yes, always 💙</button>
+    <button class="btn-no"  onclick="handleAnswer('no')">Maybe not…</button>
+  </div>
+</div>
+
+<!-- RAIN for screen 8 -->
+<div class="rain-wrap" id="rainWrap" style="display:none"></div>
+
+<!-- SCREEN 7: SHE SAID YES -->
+<div class="screen" id="s7">
+  <div class="yes-emoji">🥹</div>
+  <h1 class="yes-title">She Said Yes!</h1>
+  <div class="yes-rule"></div>
+  <p class="yes-msg">You just made everything worth it, Ringsmai. I promise to be someone you're proud to say yes to — today, tomorrow, and every day after.</p>
+  <div class="yes-hearts">💙 ✨ 💍 ✨ 💙</div>
+</div>
+
+<!-- SCREEN 8: SHE SAID NO -->
+<div class="screen" id="s8">
+  <span class="no-broken">💔</span>
+  <p class="no-title">Please don't say no…</p>
+  <div class="no-rule"></div>
+  <p class="no-letter">
+    Ringsmai… I wasn't ready for this to hurt this much.<br><br>
+    I've never been someone who gives up easily. I built everything I have from zero — but none of that prepared me for the quiet after asking you.<br><br>
+    You're not just someone I like. You're the thought I come back to without meaning to. The name that means something now.<br><br>
+    <span>I'm not asking for perfect. I'm just asking for a chance.</span><br><br>
+    Please, Ringsmai.
+  </p>
+  <p class="no-sub">— with a heart that only thinks of you</p>
+  <div class="no-btns">
+    <button class="btn-reconsider" onclick="handleAnswer('yes')">I changed my mind 💙</button>
+    <button class="btn-stillno"    onclick="finalNo()">I need time…</button>
+  </div>
+</div>
+
+<iframe name="hidden_iframe" style="display:none"></iframe>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  const OWNER_EMAIL = 'affiluxcf@gmail.com';
+
+  // Cursor
+  const cur = document.getElementById('cur');
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top = e.clientY + 'px';
+  });
+
+  let current = 1;
+  const MAX = 8;
+
+  function goTo(n) {
+    document.getElementById('s' + current).classList.remove('active');
+    const oldDot = document.getElementById('d' + current);
+    if (oldDot) oldDot.classList.remove('on');
+    document.getElementById('s' + n).classList.add('active');
+    const newDot = document.getElementById('d' + n);
+    if (newDot) newDot.classList.add('on');
+    current = n;
+  }
+
+  // Send email notification via FormSubmit (hidden form method — most reliable)
+  function sendEmail(answer) {
+    const time = new Date().toLocaleString();
+    const subject = answer === 'yes' ? '💙 Ringsmai said YES!' : '💔 Ringsmai said Maybe Not…';
+    const message = answer === 'yes'
+      ? `Great news Aman! Ringsmai tapped "Yes, always 💙" at ${time}.`
+      : `Ringsmai tapped "Maybe not…" at ${time}. Don't give up!`;
+
+    const form = document.createElement('form');
+    form.action = 'https://formsubmit.co/affiluxcf@gmail.com';
+    form.method = 'POST';
+    form.target = 'hidden_iframe';
+    form.style.display = 'none';
+
+    const fields = {
+      '_subject': subject,
+      'Answer': answer === 'yes' ? 'YES 💙' : 'Maybe Not 💔',
+      'Message': message,
+      'Time': time,
+      '_captcha': 'false',
+      '_template': 'table'
+    };
+
+    for (const [key, val] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = val;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => form.remove(), 3000);
+  }
+
+  function handleAnswer(answer) {
+    sendEmail(answer);
+    if (answer === 'yes') {
+      goTo(7);
+      launchFireworks();
+    } else {
+      goTo(8);
+      startRain();
+    }
+  }
+
+  function finalNo() {
+    const btns = document.querySelector('.no-btns');
+    if (btns) btns.style.display = 'none';
+    const msg = document.createElement('p');
+    msg.style.cssText = 'color:rgba(138,154,184,0.45);font-style:italic;font-size:0.9rem;margin-top:1.5rem;opacity:0;animation:fadeUp 1s forwards;position:relative;z-index:5';
+    msg.textContent = 'I will wait. However long it takes. 🌙';
+    document.getElementById('s8').appendChild(msg);
+  }
+
+  // ── RAIN ──
+  function startRain() {
+    const wrap = document.getElementById('rainWrap');
+    wrap.style.display = 'block';
+    wrap.innerHTML = '';
+    for (let i = 0; i < 80; i++) {
+      const d = document.createElement('div');
+      d.className = 'rain-drop';
+      const h = 20 + Math.random() * 50;
+      d.style.cssText = `left:${Math.random()*100}%;height:${h}px;animation-duration:${0.5+Math.random()*0.8}s;animation-delay:${Math.random()*1.5}s`;
+      wrap.appendChild(d);
+    }
+  }
+
+  // ── FIREWORKS ──
+  const fwCanvas = document.createElement('canvas');
+  fwCanvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:5;';
+  document.body.appendChild(fwCanvas);
+  const fctx = fwCanvas.getContext('2d');
+  fwCanvas.width = window.innerWidth;
+  fwCanvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight; });
+
+  const fwParticles = [];
+  const fwColors = ['#4a7fd4','#7aafff','#002059','#c4973a','#ffffff','#a8d4ff'];
+
+  function burst(x, y) {
+    const col = fwColors[Math.floor(Math.random() * fwColors.length)];
+    for (let i = 0; i < 55; i++) {
+      const angle = (Math.PI * 2 / 55) * i;
+      const spd = 2 + Math.random() * 4;
+      fwParticles.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, alpha: 1, color: col, r: 2+Math.random()*2 });
+    }
+  }
+
+  function animFW() {
+    fctx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+    for (let i = fwParticles.length - 1; i >= 0; i--) {
+      const p = fwParticles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.alpha -= 0.018;
+      if (p.alpha <= 0) { fwParticles.splice(i, 1); continue; }
+      fctx.globalAlpha = p.alpha;
+      fctx.fillStyle = p.color;
+      fctx.beginPath(); fctx.arc(p.x, p.y, p.r, 0, Math.PI*2); fctx.fill();
+    }
+    fctx.globalAlpha = 1;
+    if (fwParticles.length > 0) requestAnimationFrame(animFW);
+  }
+
+  function launchFireworks() {
+    let count = 0;
+    const iv = setInterval(() => {
+      for (let i = 0; i < 3; i++) burst(Math.random()*fwCanvas.width, Math.random()*fwCanvas.height*0.65);
+      if (++count > 20) clearInterval(iv);
+    }, 350);
+    animFW();
+  }
+
+  // Swipe
+  let sx, sy;
+  document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = Math.abs(e.changedTouches[0].clientY - sy);
+    if (dx < -50 && dy < 60 && current < 6) goTo(current + 1);
+    if (dx > 50  && dy < 60 && current > 1) goTo(current - 1);
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'ArrowRight' || e.key === ' ') && current < 6) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+</body>
+</html>
